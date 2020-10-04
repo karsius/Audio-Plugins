@@ -1,3 +1,3 @@
 # Audio-Plugins
 
-Juce audio plugins
+JUCE audio plugins
