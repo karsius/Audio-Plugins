@@ -13,6 +13,7 @@
 //==============================================================================
 /**
 */
+
 class A1StarterAudioProcessor  : public juce::AudioProcessor
 {
 public:
@@ -83,13 +84,14 @@ private:
     //==============================================================================
 
     juce::String getNote(int noteNumber);
-    juce::Array<int> changeToThirds(juce::SortedSet<int> process);
-    juce::Array<int> changeToThirds(juce::Array<int> process);
-    juce::Array<int> changeToEveryOther(juce::SortedSet<int> process);
-    juce::Array<int> changeToEveryOther(juce::Array<int> process);
     juce::Array<int> changeToMajor(juce::SortedSet<int> process, int majNotes);
-    void notesToPlay(juce::Array<int> process, int numSamples, int noteDuration, juce::MidiBuffer& midi);
-    void notesToPlay(juce::SortedSet<int> process, int numSamples, int noteDuration, juce::MidiBuffer& midi);
+    template <class T>
+    juce::Array<int> changeToThirds(T process);
+    template <class S>
+    juce::Array<int> changeToEveryOther(S process);
+    template<class V>
+    void notesToPlay(V process, int numSamples, int noteDuration, juce::MidiBuffer& midi);
+
 
 
 

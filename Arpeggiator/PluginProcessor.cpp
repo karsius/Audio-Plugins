@@ -160,7 +160,6 @@ bool A1StarterAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts
 
 void A1StarterAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midi)
 {
- 
     // We use the audio buffer to get timing information
     auto numSamples = buffer.getNumSamples();                                                       // [7]
 
@@ -338,7 +337,8 @@ juce::String A1StarterAudioProcessor::getNote(int noteNumber)
 }
 
 //process note numbers to thirds
-juce::Array<int> A1StarterAudioProcessor::changeToThirds(juce::SortedSet<int> process)
+template<class T>
+juce::Array<int> A1StarterAudioProcessor::changeToThirds(T process)
 {
     juce::Array<int> temp;
     int i = 0;
@@ -360,46 +360,9 @@ juce::Array<int> A1StarterAudioProcessor::changeToThirds(juce::SortedSet<int> pr
     return temp;
 }
 
-juce::Array<int> A1StarterAudioProcessor::changeToThirds(juce::Array<int> process)
-{
-    juce::Array<int> temp;
-    int i = 0;
-    bool flag = true;
-    while (i < process.size())
-    {
-        temp.add(process[i]);
-        if (flag)
-        {
-            i += 2;
-            flag = false;
-        }
-        else
-        {
-            i -= 1;
-            flag = true;
-        }
-    }
-    return temp;
-}
-
 //process note numbers to every other depending on odd numbered note size or even
-juce::Array<int> A1StarterAudioProcessor::changeToEveryOther(juce::SortedSet<int> process)
-{
-    juce::Array<int> temp;
-    int i = 0;
-    while (temp.size() < process.size())
-    {
-        //go to the next index if the index is pointing to an existing note in the array
-        while (temp.contains(process[i]))
-            i = (i + 1) % process.size();
-
-        temp.add(process[i]);
-        i = (i + 2) % process.size();
-    }
-    return temp;
-}
-
-juce::Array<int> A1StarterAudioProcessor::changeToEveryOther(juce::Array<int> process)
+template<class S>
+juce::Array<int> A1StarterAudioProcessor::changeToEveryOther(S process)
 {
     juce::Array<int> temp;
     juce::SortedSet<int> indexSeen;
@@ -450,7 +413,8 @@ juce::Array<int> A1StarterAudioProcessor::changeToMajor(juce::SortedSet<int> pro
     return temp;
 }
 
-void A1StarterAudioProcessor::notesToPlay(juce::Array<int> process, int numSamples, int noteDuration, juce::MidiBuffer& midi)
+template<class V>
+void A1StarterAudioProcessor::notesToPlay(V process, int numSamples, int noteDuration, juce::MidiBuffer &midi)
 {
     if ((time + numSamples) >= noteDuration)                                                        // [11]
     {
@@ -472,39 +436,6 @@ void A1StarterAudioProcessor::notesToPlay(juce::Array<int> process, int numSampl
 
             //update note duration
             noteName = getNote(lastNoteValue);
-            DBG("last note value = " << lastNoteValue);
-            DBG("last note name = " << noteName << "\n");
-
-        }
-    }
-
-    time = (time + numSamples) % noteDuration;                                                      // [15]
-}
-
-void A1StarterAudioProcessor::notesToPlay(juce::SortedSet<int> process, int numSamples, int noteDuration, juce::MidiBuffer &midi)
-{
-    if ((time + numSamples) >= noteDuration)                                                        // [11]
-    {
-        auto offset = juce::jmax(0, juce::jmin((int)(noteDuration - time), numSamples - 1));     // [12]
-
-        if (lastNoteValue > 0)                                                                      // [13]
-        {
-            midi.addEvent(juce::MidiMessage::noteOff(1, lastNoteValue), offset);
-            lastNoteValue = -1;
-        }
-
-        if (process.size() > 0)                                                                       // [14]
-        {
-
-            ascending ? currentNote = (currentNote + 1) % process.size() : currentNote = (currentNote - 1 + process.size()) % process.size();
-
-            lastNoteValue = process[currentNote];
-            midi.addEvent(juce::MidiMessage::noteOn(1, lastNoteValue, (juce::uint8) 127), offset);
-
-            //update note duration
-            noteName = getNote(lastNoteValue);
-            DBG("last note value = " << lastNoteValue);
-            DBG("last note name = " << noteName << "\n");
 
         }
     }
